@@ -8,6 +8,7 @@ np.random.seed(42)
 
 class NaiveNormalClassDistribution():
     def __init__(self, dataset, class_value):
+        
         """
         A class which encapsulate the relevant parameters(mean, std) for a class conditinoal normal distribution.
         The mean and std are computed from a given data set.
@@ -20,8 +21,7 @@ class NaiveNormalClassDistribution():
         
         class_data_set = dataset[np.where(dataset[:,-1].astype(float) == class_value)]
         self.prior = class_data_set.shape[0]/dataset.shape[0]
-        
-        
+         
         temp_train_set = class_data_set[0]
         self.temp_mean = temp_train_set.mean()
         self.temp_std = temp_train_set.std()
