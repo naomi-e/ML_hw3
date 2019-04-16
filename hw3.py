@@ -178,8 +178,9 @@ class MAPClassifier():
             - ccd0 : An object contating the relevant parameters and methods for the distribution of class 0.
             - ccd1 : An object contating the relevant parameters and methods for the distribution of class 1.
         """
-        
-        pass
+        self.ccd0 = ccd0
+        self.ccd1 = ccd1
+
     
     def predict(self, x):
         """
@@ -191,7 +192,10 @@ class MAPClassifier():
         Output
             - 0 if the posterior probability of class 0 is higher 1 otherwise.
         """
-        pass
+        if(self.ccd1.get_instance_posterior(x) < self.ccd0.get_instance_posterior(x)):
+            return 0
+        else:
+            return 1
     
 def compute_accuracy(testset, map_classifier):
     """
@@ -204,5 +208,16 @@ def compute_accuracy(testset, map_classifier):
     Ouput
         - Accuracy = #Correctly Classified / #testset size
     """
-    return 0
+              
+    inst_num, atrb_num = testset.shape
     
+    error_cnt = 0
+    for i in range (0, inst_num):
+        pre = map_classifier.predict(testset[i,:])
+        if(pre != testset[i,-1]):
+            error_cnt += 1
+    
+    error_rate = (error_cnt/inst_num)
+    accuracy = (1-error_rate)
+    
+    return accuracy
