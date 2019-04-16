@@ -97,10 +97,8 @@ def normal_pdf(x, mean, std):
  
     Returns the normal distribution pdf according to the given mean and var for the given x.    
     """
-    a = 1 / (np.sqrt( 2 * np.pi * np.power(std, 2)))
-    b = np.exp( - np.power((x - mean), 2) / (2 * np.power(std, 2) ))
-  
-    normal =  a*b 
+    
+    normal = 1 / (np.sqrt( 2 * np.pi * np.power(std, 2))) * np.exp( - np.power((x - mean), 2) / (2 * np.power(std, 2) ))
     return normal
 
                                                                             
