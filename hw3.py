@@ -86,7 +86,6 @@ class MultiNormalClassDistribution():
         return 1
     
     
-
 def normal_pdf(x, mean, std):
     """
     Calculate normal desnity function for a given x, mean and standrad deviation.
@@ -98,10 +97,12 @@ def normal_pdf(x, mean, std):
  
     Returns the normal distribution pdf according to the given mean and var for the given x.    
     """
-    normal = 1 / (np.sqrt( 2 * np.pi * np.power(std, 2))) * np.exp( - np.power((x - std), 2) / (2 * np.power(mean, 2) ))
+    a = 1 / (np.sqrt( 2 * np.pi * np.power(std, 2)))
+    b = np.exp( - np.power((x - mean), 2) / (2 * np.power(std, 2) ))
+  
+    normal =  a*b 
     return normal
-   
-    
+
                                                                             
 def multi_normal_pdf(x, mean, cov):
     """
