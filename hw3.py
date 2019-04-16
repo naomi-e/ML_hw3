@@ -16,27 +16,44 @@ class NaiveNormalClassDistribution():
         - dataset: The dataset from which to compute the mean and mu (Numpy Array).
         - class_value : The class to calculate the mean and mu for.
         """
+        self.class_value = class_value
         
-        pass
+        class_data_set = dataset[np.where(dataset[:,-1].astype(float) == class_value)]
+        self.prior = class_data_set.shape[0]/dataset.shape[0]
+        
+        
+        temp_train_set = class_data_set[0]
+        self.temp_mean = temp_train_set.mean()
+        self.temp_std = temp_train_set.std()
+        
+        humi_train_set = class_data_set[1]
+        self.humi_mean = humi_train_set.mean()
+        self.humi_std = humi_train_set.std()
+        
+        print("for class ", class_value, " the prior is ", self.prior, 
+              " temp_mean=", self.temp_mean, " temp_std=", self.temp_std,  
+              " humi_mean=", self.humi_mean, " humi_std=", self.humi_std)
     
     def get_prior(self):
         """
         Returns the prior porbability of the class according to the dataset distribution.
         """
-        return 1
+        return self.prior
     
     def get_instance_likelihood(self, x):
         """
         Returns the likelihhod porbability of the instance under the class according to the dataset distribution.
         """
-        return 1
+        p0=normal_pdf(x[0], self.temp_mean, self.temp_std)
+        p1=normal_pdf(x[1], self.humi_mean, self.humi_std)
+        return (p0 * p1)
     
     def get_instance_posterior(self, x):
         """
         Returns the posterior porbability of the instance under the class according to the dataset distribution.
         * Ignoring p(x)
         """
-        return 1
+        return ( self.get_instance_likelihood(x) * self.get_prior() )
     
 class MultiNormalClassDistribution():
     def __init__(self, dataset, class_value):
@@ -96,9 +113,7 @@ def multi_normal_pdf(x, mean, cov):
     - mean: The mean value of the distribution.
     - std:  The standard deviation of the distribution.
  
-    Returns the normal distribution pdf according to the given mean and var for the given x.    
-    
-     (2\pi)^{-\frac{d}{2}} det(\Sigma )^{-\frac{1}{2}} \cdot e ^{-\frac{1}{2}(x-\mu)^T \Sigma ^ {-1} (x - \mu)
+    Returns the normal distribution pdf according to the given mean and var for the given x.        
     """
     dim = x.shape[0] - 1 # get the dimensions of the vector
     
@@ -163,6 +178,7 @@ class MAPClassifier():
             - ccd0 : An object contating the relevant parameters and methods for the distribution of class 0.
             - ccd1 : An object contating the relevant parameters and methods for the distribution of class 1.
         """
+        
         pass
     
     def predict(self, x):
