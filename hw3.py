@@ -1,5 +1,4 @@
 import numpy as np
-import math
 np.random.seed(42)
 
 ####################################################################################################
@@ -99,7 +98,7 @@ def normal_pdf(x, mean, std):
  
     Returns the normal distribution pdf according to the given mean and var for the given x.    
     """
-    normal = 1 / (math.sqrt( 2 * math.pi * math.pow(std, 2))) * math.exp( - math.pow((x - std), 2) / (2 * math.pow(mean, 2) ))
+    normal = 1 / (np.sqrt( 2 * np.pi * np.power(std, 2))) * np.exp( - np.power((x - std), 2) / (2 * np.power(mean, 2) ))
     return normal
    
     
@@ -117,9 +116,9 @@ def multi_normal_pdf(x, mean, cov):
     """
     dim = x.shape[0] - 1 # get the dimensions of the vector
     
-    a = math.pow((math.pi * 2), (- dim / 2))
-    b = math.pow(np.linalg.det(cov), -0.5)  
-    c = math.exp(-0.5 * np.vstack(x - mean) * np.linalg.inv(cov)* (x - mean))
+    a = np.power((np.pi * 2), (- dim / 2))
+    b = np.power(np.linalg.det(cov), -0.5)  
+    c = np.exp(-0.5 * np.vstack(x - mean) * np.linalg.inv(cov)* (x - mean))
                                                                         
     multi_normal = a * b * c                                                      
                  
