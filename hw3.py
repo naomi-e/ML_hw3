@@ -118,7 +118,7 @@ def multi_normal_pdf(x, mean, cov):
     a = np.power((np.pi * 2), (- dim / 2))
     b = np.power(np.linalg.det(cov), -0.5)  
     c = np.exp(-0.5 * np.vstack(x - mean) * np.linalg.inv(cov)* (x - mean))
-                                                                        
+                                                                            
     multi_normal = a * b * c                                                      
                  
     return multi_normal
@@ -132,34 +132,53 @@ EPSILLON = 1e-6 # == 0.000001 It could happen that a certain value will only occ
 
 class DiscreteNBClassDistribution():
     def __init__(self, dataset, class_value):
+        
         """
-        A class which computes and encapsulate the relevant probabilites for a discrete naive bayes 
-        distribution for a specific class. The probabilites are computed with la place smoothing.
+        A class which encapsulate the relevant parameters(mean, std) for a class conditinoal normal distribution.
+        The mean and std are computed from a given data set.
         
         Input
-        - dataset: The dataset from which to compute the probabilites (Numpy Array).
-        - class_value : Compute the relevant parameters only for instances from the given class.
+        - dataset: The dataset from which to compute the mean and mu (Numpy Array).
+        - class_value : The class to calculate the mean and mu for.
         """
-        pass
+        self.class_value = class_value
+        
+        class_data_set = dataset[np.where(dataset[:,-1].astype(float) == class_value)]
+        self.prior = (class_data_set.shape[0] + 1) / (dataset.shape[0] + 2)
+         
+        temp_train_set = class_data_set[0]
+        self.temp_mean = temp_train_set.mean()
+        self.temp_std = temp_train_set.std()
+        
+        humi_train_set = class_data_set[1]
+        self.humi_mean = humi_train_set.mean()
+        self.humi_std = humi_train_set.std()
+        
+        print("for class ", class_value, " the prior is ", self.prior, 
+              " temp_mean=", self.temp_mean, " temp_std=", self.temp_std,  
+              " humi_mean=", self.humi_mean, " humi_std=", self.humi_std)
     
     def get_prior(self):
         """
         Returns the prior porbability of the class according to the dataset distribution.
         """
-        return 1
+        return self.prior
     
     def get_instance_likelihood(self, x):
         """
         Returns the likelihhod porbability of the instance under the class according to the dataset distribution.
         """
-        return 1
+        p0=normal_pdf(x[0], self.temp_mean, self.temp_std)
+        p1=normal_pdf(x[1], self.humi_mean, self.humi_std)
+        return (p0 * p1)
     
     def get_instance_posterior(self, x):
         """
         Returns the posterior porbability of the instance under the class according to the dataset distribution.
         * Ignoring p(x)
         """
-        return 1
+        return ( self.get_instance_likelihood(x) * self.get_prior() )
+    
 
     
 ####################################################################################################
