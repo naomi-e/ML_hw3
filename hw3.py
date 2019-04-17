@@ -64,26 +64,49 @@ class MultiNormalClassDistribution():
         - dataset: The dataset from which to compute the mean and mu (Numpy Array).
         - class_value : The class to calculate the mean and mu for.
         """
-        pass
+        
+        self.class_value = class_value
+        samples, features = dataset.shape
+        self.d = features
+        
+        class_data_set = dataset[np.where(dataset[:,-1].astype(float) == class_value)]
+        self.prior = class_data_set.shape[0]/dataset.shape[0]
+        self.cov_matrix = np.cov(m=class_data_set, y=None, rowvar=False, bias=False, ddof=None, fweights=None, aweights=None)[:-1, :-1]
+        self.cov_matrix_inv = np.linalg.inv(self.cov_matrix)
+        self.cov_matrix_det = np.linalg.det(self.cov_matrix)
+         
+        temp_train_set = class_data_set[0]
+        self.temp_mean = temp_train_set.mean()
+
+        humi_train_set = class_data_set[1]
+        self.humi_mean = humi_train_set.mean()
+        
+        
+        self.mean_vector = np.array([self.temp_mean, self.humi_mean]) #self.mean_vector (2,)
+
+        
+        
         
     def get_prior(self):
         """
         Returns the prior porbability of the class according to the dataset distribution.
         """
-        return 1
+        return self.prior
     
     def get_instance_likelihood(self, x):
         """
         Returns the likelihhod porbability of the instance under the class according to the dataset distribution.
         """
-        return 1
+       
+        
+        return (multi_normal_pdf(x[:-1], self.mean_vector, self.cov_matrix))
     
     def get_instance_posterior(self, x):
         """
         Returns the posterior porbability of the instance under the class according to the dataset distribution.
         * Ignoring p(x)
         """
-        return 1
+        return ( self.get_instance_likelihood(x) * self.get_prior() )
     
     
 def normal_pdf(x, mean, std):
@@ -117,10 +140,20 @@ def multi_normal_pdf(x, mean, cov):
     
     a = np.power((np.pi * 2), (- dim / 2))
     b = np.power(np.linalg.det(cov), -0.5)  
-    c = np.exp(-0.5 * np.vstack(x - mean) * np.linalg.inv(cov)* (x - mean))
+    
+    c1 = ((x - mean).reshape(1, x.shape[0])).dot(np.linalg.inv(cov))
+    c2 = c1.dot(np.vstack(x - mean))
+    c3 = np.exp(-0.5 * c2)
+    c=c3[0][0]
+    
+   
                                                                         
     multi_normal = a * b * c                                                      
-                 
+    #print("multi_normal return: ", multi_normal)
+    #print("a: ", a, " b: ", b, " c1: " ,c2, " c2: " ,c3, " c3: " ,c, " c: " ,c)
+    #print("((x - mean).reshape(1, x.shape[0])): ", ((x - mean).reshape(1, x.shape[0])), " np.linalg.inv(cov): ", np.linalg.inv(cov), " np.vstack(x - mean): " ,np.vstack(x - mean)
+   # print("((x - mean).reshape(1, x.shape[0])).shape: ", ((x - mean).reshape(1, x.shape[0])).shape, " np.linalg.inv(cov).shape: ", np.linalg.inv(cov).shape, " np.vstack(x - mean).shape: " ,np.vstack(x - mean).shape)
+    #raise Exception
     return multi_normal
 
 
