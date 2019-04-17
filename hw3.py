@@ -70,20 +70,22 @@ class MultiNormalClassDistribution():
         self.d = features
         
         class_data_set = dataset[np.where(dataset[:,-1].astype(float) == class_value)]
+        
         self.prior = class_data_set.shape[0]/dataset.shape[0]
         self.cov_matrix = np.cov(m=class_data_set, y=None, rowvar=False, bias=False, ddof=None, fweights=None, aweights=None)[:-1, :-1]
+        
         self.cov_matrix_inv = np.linalg.inv(self.cov_matrix)
         self.cov_matrix_det = np.linalg.det(self.cov_matrix)
          
-        temp_train_set = class_data_set[0]
+        temp_train_set = class_data_set[:,0]
+        
         self.temp_mean = temp_train_set.mean()
 
-        humi_train_set = class_data_set[1]
+        humi_train_set = class_data_set[:,1]
+        
         self.humi_mean = humi_train_set.mean()
-        
-        
         self.mean_vector = np.array([self.temp_mean, self.humi_mean]) #self.mean_vector (2,)
-
+        
         
         
         
@@ -149,11 +151,6 @@ def multi_normal_pdf(x, mean, cov):
    
                                                                         
     multi_normal = a * b * c                                                      
-    #print("multi_normal return: ", multi_normal)
-    #print("a: ", a, " b: ", b, " c1: " ,c2, " c2: " ,c3, " c3: " ,c, " c: " ,c)
-    #print("((x - mean).reshape(1, x.shape[0])): ", ((x - mean).reshape(1, x.shape[0])), " np.linalg.inv(cov): ", np.linalg.inv(cov), " np.vstack(x - mean): " ,np.vstack(x - mean)
-   # print("((x - mean).reshape(1, x.shape[0])).shape: ", ((x - mean).reshape(1, x.shape[0])).shape, " np.linalg.inv(cov).shape: ", np.linalg.inv(cov).shape, " np.vstack(x - mean).shape: " ,np.vstack(x - mean).shape)
-    #raise Exception
     return multi_normal
 
 
@@ -173,28 +170,74 @@ class DiscreteNBClassDistribution():
         - dataset: The dataset from which to compute the probabilites (Numpy Array).
         - class_value : Compute the relevant parameters only for instances from the given class.
         """
-        pass
-    
+        self.class_value = class_value
+        self.samples_num, self.features_num = dataset.shape
+        
+        class_data_set = dataset[np.where(dataset[:,-1].astype(float) == class_value)]
+        self.prior = class_data_set.shape[0]/dataset.shape[0]
+        print(self.prior)
+        
+        self.class_value = class_value
+        self.proc_dic = {}
+        self.ni = class_data_set.shape[0]
+        self.Vj_vector = []
+       
+        
+        for j in range (self.features_num - 1):
+            
+            feature_j_values = np.unique(dataset[:,j])
+            self.Vj_vector.append(np.size(feature_j_values))
+            sum = 0
+            nij_sum = 0
+
+            for value in feature_j_values:
+               
+                nij = (class_data_set[np.where(class_data_set[:,j].astype(float) == value)]).shape[0]
+               
+                self.proc_dic[(j, value)] = (nij + 1)/(self.ni + self.Vj_vector[j])
+                sum += self.proc_dic[(j, value)]
+                nij_sum += nij
+               
+            if (sum < 0.99):
+                print(sum)
+                print("j=", j, " Vj_vector=", self.Vj_vector[j], " nij=", nij, " self.ni=", self.ni, " feature_j_values=", feature_j_values, " nij_sum=", nij_sum)
+                raise Exception
+            if (nij_sum < self.ni):
+                print("j=", j, " Vj_vector=", self.Vj_vector[j], " nij=", nij, " self.ni=", self.ni, " feature_j_values=", feature_j_values, " nij_sum=", nij_sum)
+                raise Exception
+        
+
+            
+        
     def get_prior(self):
         """
         Returns the prior porbability of the class according to the dataset distribution.
         """
-        return 1
+        return self.prior
     
     def get_instance_likelihood(self, x):
         """
         Returns the likelihhod porbability of the instance under the class according to the dataset distribution.
         """
-        return 1
+        likelyhood = 1
+
+        for j in range (np.size(x)-1):
+            if (j,x[j]) not in self.proc_dic.keys():
+                likelyhood *= EPSILLON
+                print("EPSILLON: j=", j, "x[j]=",  )
+            else:
+                likelyhood *= self.proc_dic[(j,x[j])]
+        
+        return likelyhood
     
     def get_instance_posterior(self, x):
         """
         Returns the posterior porbability of the instance under the class according to the dataset distribution.
         * Ignoring p(x)
         """
-        return 1
-
+        return ( self.get_instance_likelihood(x) * self.get_prior() )
     
+
 ####################################################################################################
 #                                            General
 ####################################################################################################            
@@ -223,6 +266,9 @@ class MAPClassifier():
         Output
             - 0 if the posterior probability of class 0 is higher 1 otherwise.
         """
+#         print(self.ccd1.get_instance_posterior(x), self.ccd0.get_instance_posterior(x))
+#         if((self.ccd1.get_instance_posterior(x) + self.ccd0.get_instance_posterior(x)) != 1):
+#             raise Exception
         if(self.ccd1.get_instance_posterior(x) < self.ccd0.get_instance_posterior(x)):
             return 0
         else:
