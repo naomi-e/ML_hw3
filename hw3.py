@@ -86,9 +86,6 @@ class MultiNormalClassDistribution():
         self.humi_mean = humi_train_set.mean()
         self.mean_vector = np.array([self.temp_mean, self.humi_mean]) #self.mean_vector (2,)
         
-        
-        
-        
     def get_prior(self):
         """
         Returns the prior porbability of the class according to the dataset distribution.
@@ -99,8 +96,6 @@ class MultiNormalClassDistribution():
         """
         Returns the likelihhod porbability of the instance under the class according to the dataset distribution.
         """
-       
-        
         return (multi_normal_pdf(x[:-1], self.mean_vector, self.cov_matrix))
     
     def get_instance_posterior(self, x):
@@ -146,10 +141,8 @@ def multi_normal_pdf(x, mean, cov):
     c1 = ((x - mean).reshape(1, x.shape[0])).dot(np.linalg.inv(cov))
     c2 = c1.dot(np.vstack(x - mean))
     c3 = np.exp(-0.5 * c2)
-    c=c3[0][0]
-    
-   
-                                                                        
+    c = c3[0][0]
+                                                                     
     multi_normal = a * b * c                                                      
     return multi_normal
 
@@ -219,16 +212,16 @@ class DiscreteNBClassDistribution():
         """
         Returns the likelihhod porbability of the instance under the class according to the dataset distribution.
         """
-        likelyhood = 1
+        likelihood = 1
 
         for j in range (np.size(x)-1):
             if (j,x[j]) not in self.proc_dic.keys():
-                likelyhood *= EPSILLON
+                likelihood *= EPSILLON
                 print("EPSILLON: j=", j, "x[j]=",  )
             else:
-                likelyhood *= self.proc_dic[(j,x[j])]
+                likelihood *= self.proc_dic[(j,x[j])]
         
-        return likelyhood
+        return likelihood
     
     def get_instance_posterior(self, x):
         """
